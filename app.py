@@ -1,20 +1,24 @@
 from flask import Flask
 from flask import request
+from flask import jsonify
 
 
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
     return 'Hi woorld'
 
-@app.route('/fbwebhook', methods=["GET","POST"])
+
+@app.route('/fbwebhook', methods=["GET", "POST"])
 def webhook():
     if request.method == "GET":
         return get_webhook()
     elif request.method == "POST":
         return post_webhook()
     return 'Unexpected response'
+
 
 def get_webhook():
     VERIFY_TOKEN = "serg_squad"
@@ -28,9 +32,26 @@ def get_webhook():
     else:
         return 'Fail!', 403
 
+
 def post_webhook():
     print(str(request.get_json()))
-    return 'POST'
+    response = {
+        "attachment": {
+            "type": "template",
+            "payload": {
+                "template_type": "button",
+                "text": "OK, let's start socializing again!",
+                "buttons": [{
+                    "type": "web_url",
+                    "url": "https://catchupbot.com",
+                    "title": "Set preferences",
+                    "webview_height_ratio": "compact",
+                    "messenger_extensions": True
+                }]
+            }
+        }
+    }
+    return jsonify(response)
 
 
 if __name__ == "__main__":
