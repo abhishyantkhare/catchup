@@ -38,6 +38,7 @@ def get_webhook():
 def post_webhook():
     req_json = request.get_json()
     user_id = req_json['entry'][0]['messaging'][0]['sender']['id']
+    print(user_id)
     response = {
         "attachment": {
             "type": "template",
@@ -60,12 +61,28 @@ def post_webhook():
         "recipient": {
             "id": user_id
         },
-        "message": response
+        "message": {
+        	"attachment": 
+        	{
+            "type": "template",
+            "payload": {
+                "template_type": "button",
+                "text": "OK, let's start socializing again!",
+                "buttons": [{
+                    "type": "web_url",
+                    "url": "https://catchupbot.com",
+                    "title": "Set preferences",
+                    "webview_height_ratio": "compact",
+                    "messenger_extensions": True
+                }]
+            }
+        }
+	 }
     }
 
-    r = requests.post(SEND_API_URL, send_msg)
+    r = requests.post(SEND_API_URL, json=send_msg)
 
-
+    print(r.status_code)
 
     return "Received!"
 
