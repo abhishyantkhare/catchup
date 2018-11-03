@@ -3,6 +3,9 @@ from flask import request
 from flask import jsonify
 from flask import make_response
 from flask import render_template
+from flask_socketio import SocketIO
+socketio = SocketIO(app)
+
 import requests
 
 
@@ -17,11 +20,9 @@ def index():
     resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
     return resp
 
-
-@app.route('/test')
-def test():
-    data  = request.args.get('data')
-    print('data')
+@socketio.on('fbdata_event')
+def parse_fb_data(json):
+    print('received json: ' + str(json))
 
 @app.route('/fbwebhook', methods=["GET", "POST"])
 def webhook():
@@ -81,4 +82,4 @@ def post_webhook():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=80)
+    socketio.run(app, host="0.0.0.0", port=80)
