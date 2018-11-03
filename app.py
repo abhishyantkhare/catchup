@@ -24,7 +24,7 @@ def get_webhook():
     challenge = request.args.get('hub.challenge')
 
     if mode == 'subscribe' and token == VERIFY_TOKEN:
-        return 'Webhook succeeded!'
+        return challenge
     else:
         return 'Fail!', 403
 
