@@ -1,10 +1,12 @@
 from flask import Flask
 from flask import request
 from flask import jsonify
+import requests
 
 
 app = Flask(__name__)
 
+SEND_API_URL = "https://graph.facebook.com/v2.6/me/messages?access_token=EAAE9HFOuWMkBABlZC3IArcPyCjZBSdNDuecUzNmqCXuvWdHHX17G8NzjGRpnRvgsBpEAnpmEhWtPCZArvkI0C45DQYnxZAReOhP1dL2LNZClBWeRUdoZAnnNUFcYqnZBsGnnoTFMhhW4UNYq8ah9BfYOvzO2giWmzZAavLG4ZBHWHagZDZD"
 
 @app.route('/')
 def index():
@@ -34,7 +36,8 @@ def get_webhook():
 
 
 def post_webhook():
-    print(str(request.get_json()))
+    req_json = request.get_json()
+    user_id = req_json['entry']['messaging'][0]['sender']['id']
     response = {
         "attachment": {
             "type": "template",
@@ -51,7 +54,20 @@ def post_webhook():
             }
         }
     }
-    return jsonify(response)
+
+    send_msg = {
+        "messaging_type": "RESPONSE",
+        "recipient": {
+            "id": user_id
+        },
+        "message": response
+    }
+
+    r = requests.post(SEND_API_URL, send_msg)
+
+
+
+    return "Received!"
 
 
 if __name__ == "__main__":
