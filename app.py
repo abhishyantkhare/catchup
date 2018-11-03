@@ -18,7 +18,7 @@ def index():
     return resp
 
 
-@app.route('/testing')
+@app.route('/test')
 def test():
     data  = request.args.get('data')
     print('data')
