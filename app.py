@@ -37,7 +37,7 @@ def get_webhook():
 
 def post_webhook():
     req_json = request.get_json()
-    user_id = req_json['entry']['messaging'][0]['sender']['id']
+    user_id = req_json['entry'][0]['messaging'][0]['sender']['id']
     response = {
         "attachment": {
             "type": "template",
