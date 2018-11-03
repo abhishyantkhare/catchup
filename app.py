@@ -1,6 +1,8 @@
 from flask import Flask
 from flask import request
 from flask import jsonify
+from flask import make_response
+from flask import render_template
 import requests
 
 
@@ -10,8 +12,16 @@ SEND_API_URL = "https://graph.facebook.com/v2.6/me/messages?access_token=EAAE9HF
 
 @app.route('/')
 def index():
-    return 'Hi woorld'
+    resp = make_response(render_template('index.html'))
+    resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.messenger.com/"
+    resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
+    return resp
 
+
+@app.route('/testing')
+def test():
+    data  = request.args.get('data')
+    print('data')
 
 @app.route('/fbwebhook', methods=["GET", "POST"])
 def webhook():
