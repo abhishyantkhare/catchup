@@ -4,7 +4,7 @@ window.extAsyncInit = function () {
     console.log("SDK done loading!")
     MessengerExtensions.getContext('348666849024201',
         function success(thread_context) {
-            socket.emit('fbdata_event', 'hello')
+            console.log(thread_context)
         },
         function error(err) {
             // error
