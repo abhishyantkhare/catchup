@@ -66,7 +66,18 @@ def storechat():
 def updatechat():
     req_json = request.get_json()
     tid = req_json['chat_id']
-    credential = chats.find_one(filter = {'chat_id': tid})
+    chat_data = chats.find_one(filter = {'chat_id': tid})
+    credential = chat_data['credentials']
+    credential.append(flask.session['user_email'])
+    chats.update_one({
+        'chat_id': tid,
+    }, {
+        '$set':
+        {
+            'credentials': credential
+        }
+    })
+    return "UPDATED"
 
 
 @app.route('/pickevent')
@@ -95,6 +106,7 @@ def test_api_request():
 
     user_info = user_info_service.people().get(userId='me').execute()
     user_email = user_info['emails'][0]['value']
+    flask.session['user_email'] = user_email
 
     utc_now = datetime.datetime.utcnow()
     now = utc_now.isoformat() + 'Z'  # 'Z' indicates UTC time
