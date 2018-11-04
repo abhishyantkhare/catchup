@@ -62,13 +62,11 @@ def storechat():
     chats.insert_one(credential)
     return 'Stored!'
 
-@app.route('/updatechat', methods=['GET', 'POST'])
-def updatechat():
-    req_json = request.get_json()
-    tid = req_json['chat_id']
+def updatechat(tid, email):
     chat_data = chats.find_one(filter = {'chat_id': tid})
     credential = chat_data['credentials']
-    credential.append(flask.session['user_email'])
+    credential.append(email)
+    print(credential)
     chats.update_one({
         'chat_id': tid,
     }, {
@@ -107,6 +105,10 @@ def test_api_request():
     user_info = user_info_service.people().get(userId='me').execute()
     user_email = user_info['emails'][0]['value']
     flask.session['user_email'] = user_email
+    chat_id = request.args.get('chatid')
+    if chat_id is not None:
+        tid = request.get_json()['chatid']
+        updatechat(tid, user_email)
 
     utc_now = datetime.datetime.utcnow()
     now = utc_now.isoformat() + 'Z'  # 'Z' indicates UTC time

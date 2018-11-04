@@ -20,12 +20,9 @@ messenger_extensions = true;
             console.log(thread_context)
             tid = thread_context.tid
 	   
-                data = {'chat_id': tid}
                 $.ajax({
-                    type: "POST",
-                    url: "https://catchupbot.com/updatechat",
-                    data: JSON.stringify(data),
-                    contentType: 'application/json'
+                    type: "GET",
+                    url: "https://catchupbot.com/test?chatid="+tid,
                 })
             }
         ,
@@ -48,7 +45,6 @@ messenger_extensions = true;
      });},
       function(errorCode, errorMessage) {      
       // An error occurred in the process
-      alert(errorMessage)
       
       },
       message,
