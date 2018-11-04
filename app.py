@@ -53,6 +53,14 @@ def getchat():
         resp = {"credentials": "NONE"}
         return jsonify(resp)
     return jsonify(dumps(creds))
+
+@app.route('/storechat', methods=['GET', 'POST'])
+def storechat():
+    req_json = request.get_json()
+    tid = req_json['chat_id']
+    credential = {'chat_id': tid, 'credentials': []}
+    chats.insert_one(credential)
+    return 'Stored!'
     
 
 

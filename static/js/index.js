@@ -11,6 +11,18 @@ window.extAsyncInit = function () {
         url: "https://catchupbot.com/getchat?id=" + tid,
         success: function getSuccess(data, status, jqXHR) {
             console.log(data)
+            if(!(data.credentials === "NONE")) {
+                console.log("stored in DB!")
+            }
+            else{
+                data = {'chat_id': tid}
+                $.ajax({
+                    type: "POST",
+                    url: "https://catchupbot.com/storechat",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json'
+                })
+            }
         }
 		})
         },
