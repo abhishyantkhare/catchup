@@ -75,27 +75,10 @@ def test_api_request():
     #              credentials in a persistent database instead.
     flask.session['credentials'] = credentials_to_dict(credentials)
 
-    message = {
-        "attachment":
-        {
-            "type": "template",
-                    "payload": {
-                        "template_type": "button",
-                        "text": "Your friend misses you! Use catchupbot to hangout again!",
-                        "buttons": [{
-                            "type": "web_url",
-                            "url": "https://catchupbot.com",
-                            "title": "Set preferences",
-                            "webview_height_ratio": "compact",
-                            "messenger_extensions": True
-                        }]
-                    }
-        }
-    }
 
     send_message(flask.session["chat_id"], message)
 
-    return flask.jsonify(**freebusy_result)
+    return render_template("share_auth.html")
 
 
 @app.route('/authorize')
