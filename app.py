@@ -75,9 +75,12 @@ def test_api_request():
     #              credentials in a persistent database instead.
     flask.session['credentials'] = credentials_to_dict(credentials)
 
+    resp = make_response(render_template('share_auth.html'))
+    resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.messenger.com/"
+    resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
 
 
-    return render_template("share_auth.html")
+    return resp
 
 
 @app.route('/authorize')
@@ -93,8 +96,11 @@ def authorize():
 
     # Store the state so the callback can verify the auth server response.
     flask.session['state'] = state
+    resp = make_response(flask.redirect(authorization_url))
+    resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.messenger.com/"
+    resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
 
-    return flask.redirect(authorization_url)
+    return resp
 
 
 @app.route('/oauth2callback')
