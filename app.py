@@ -3,20 +3,13 @@ from flask import request
 from flask import jsonify
 from flask import make_response
 from flask import render_template
-from flask_socketio import SocketIO
-import logging
 
 import requests
 
 
 app = Flask(__name__)
-socketio = SocketIO(app)
 
 
-if __name__ != '__main__':
-    gunicorn_logger = logging.getLogger('gunicorn.error')
-    app.logger.handlers = gunicorn_logger.handlers
-    app.logger.setLevel(gunicorn_logger.level)
 
 
 
@@ -29,9 +22,12 @@ def index():
     resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
     return resp
 
-@socketio.on('fbdata_event')
-def parse_fb_data(json):
-    app.logger.error(str(json))
+@app.route('/testing', methods=['GET', 'POST'])
+def testing():
+    req_json = request.get_json()
+    print(req_json)
+    return ('got data')
+
 
 @app.route('/fbwebhook', methods=["GET", "POST"])
 def webhook():
@@ -91,4 +87,4 @@ def post_webhook():
 
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=80)
+    app.run(host="0.0.0.0", port=80)
