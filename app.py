@@ -27,7 +27,7 @@ SEND_API_URL = "https://graph.facebook.com/v2.6/me/messages?access_token=EAAE9HF
 
 @app.route('/')
 def index():
-    resp = make_response(flask.redirect('authorize'))
+    resp = make_response(render_template('index.html'))
     resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.messenger.com/"
     resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
     return resp
