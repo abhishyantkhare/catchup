@@ -8,6 +8,7 @@ window.extAsyncInit = function () {
         },
         function error(err) {
             // error
+            console.log(err)
         }
     );
 };
