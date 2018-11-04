@@ -1,0 +1,2 @@
+window.extAsyncInit = function () {
+}

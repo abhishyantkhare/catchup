@@ -68,6 +68,13 @@ def updatechat():
     tid = req_json['chat_id']
     credential = chats.find_one(filter = {'chat_id': tid})
 
+
+@app.route('/pickevent')
+def pickevent():
+    resp = make_response(render_template('pick_event.html'))
+    resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.messenger.com/"
+    resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
+    return resp 
     
 
 

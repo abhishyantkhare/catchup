@@ -13,7 +13,7 @@ window.extAsyncInit = function () {
             console.log(data)
             if(!(data.credentials === "NONE")) {
                 console.log("stored in DB!")
-
+                window.location = "https://catchupbot.com/pickevent"
             }
             else{
                 data = {'chat_id': tid}
