@@ -17,7 +17,7 @@ import requests
 app = Flask(__name__)
 cors = CORS(app)
 
-SCOPES = [["https://www.googleapis.com/auth/calendar.readonly"]]
+SCOPES= ['https://www.googleapis.com/auth/calendar.readonly']
 API_SERVICE_NAME = 'calendar'
 API_VERSION = 'v3'
 
@@ -27,7 +27,7 @@ SEND_API_URL = "https://graph.facebook.com/v2.6/me/messages?access_token=EAAE9HF
 
 @app.route('/')
 def index():
-    resp = make_response(render_template('index.html'))
+    resp = make_response(flask.redirect('authorize'))
     resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.messenger.com/"
     resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
     return resp
@@ -104,8 +104,8 @@ def oauth2callback():
 
     # Store credentials in the session.
     # ACTION ITEM: In a production app, you likely want to save these
-    #              credentials in a persistent database instead.
     credentials = flow.credentials
+
     flask.session['credentials'] = credentials_to_dict(credentials)
 
     return flask.redirect(flask.url_for('test_api_request'))
@@ -180,4 +180,4 @@ if __name__ == "__main__":
     # TODO REMOVE ON REAL APPLICATION
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-    app.run(host="0.0.0.0", port=80)
+    app.run(host="https://www.catchupbot.com", port=80)
