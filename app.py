@@ -10,10 +10,14 @@ import datetime
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
+from bson.json_util import dumps
+from pymongo import MongoClient
 
 import requests
 
-
+client = MongoClient()
+db = client.catchupdb
+chats = db.chats
 app = Flask(__name__)
 cors = CORS(app)
 
@@ -40,6 +44,29 @@ def testing():
     flask.session['chat_id'] = req_json['tid']
     print(req_json)
     return ('got data')
+
+@app.route('/getchat')
+def getchat():
+    chat_id = request.args.get('id')
+    creds = chats.find_one(filter = {'chat_id': chat_id})
+    if creds == None:
+        resp = {"credentials": "NONE"}
+        return jsonify(resp)
+    return jsonify(dumps(creds))
+
+@app.route('/storechat', methods=['GET', 'POST'])
+def storechat():
+    req_json = request.get_json()
+    tid = req_json['chat_id']
+    credential = {'chat_id': tid, 'credentials': []}
+    chats.insert_one(credential)
+    return 'Stored!'
+
+@app.route('/updatechat', methods=['GET', 'POST'])
+def updatechat():
+    req_json = request.get_json()
+    tid = req_json['chat_id']
+    credential = chats.find_one(filter = {'chat_id': tid})
 
 @app.route('/test')
 def test_api_request():
