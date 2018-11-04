@@ -3,26 +3,121 @@ from flask import request
 from flask import jsonify
 from flask import make_response
 from flask import render_template
-from flask_socketio import SocketIO
-socketio = SocketIO(app)
+from flask_cors import CORS, cross_origin
+import flask
+import os
+import datetime
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
 
 import requests
 
 
 app = Flask(__name__)
+cors = CORS(app)
 
+SCOPES= ['https://www.googleapis.com/auth/calendar.readonly']
+API_SERVICE_NAME = 'calendar'
+API_VERSION = 'v3'
+
+app.secret_key = '\xf5,\xd3uH=\xb4\rS\xa7\x16\xbf\x14\xb5A0\xca\n{\x1e\xf1J1~'
+CLIENT_SECRETS_FILE = "client_secret.json"
 SEND_API_URL = "https://graph.facebook.com/v2.6/me/messages?access_token=EAAE9HFOuWMkBABlZC3IArcPyCjZBSdNDuecUzNmqCXuvWdHHX17G8NzjGRpnRvgsBpEAnpmEhWtPCZArvkI0C45DQYnxZAReOhP1dL2LNZClBWeRUdoZAnnNUFcYqnZBsGnnoTFMhhW4UNYq8ah9BfYOvzO2giWmzZAavLG4ZBHWHagZDZD"
 
 @app.route('/')
 def index():
-    resp = make_response(render_template('index.html'))
+    resp = make_response(flask.redirect('authorize'))
     resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.messenger.com/"
     resp.headers['X-FRAME-OPTIONS'] = "ALLOW-FROM https://www.facebook.com/"
     return resp
 
-@socketio.on('fbdata_event')
-def parse_fb_data(json):
-    print('received json: ' + str(json))
+@app.route('/testing', methods=['GET', 'POST'])
+def testing():
+    req_json = request.get_json()
+    print(req_json)
+    return ('got data')
+
+@app.route('/test')
+def test_api_request():
+    if 'credentials' not in flask.session:
+        return flask.redirect('authorize')
+
+    # Load credentials from the session.
+    credentials = google.oauth2.credentials.Credentials(
+      **flask.session['credentials'])
+
+    service = googleapiclient.discovery.build(
+        API_SERVICE_NAME, API_VERSION, credentials=credentials)
+
+    utc_now = datetime.datetime.utcnow()
+    now = utc_now.isoformat() + 'Z' # 'Z' indicates UTC time
+    utc_nxt = utc_now + datetime.timedelta(days=7)
+    nxt = utc_nxt.isoformat() + 'Z'
+
+    freebusy_result = service.freebusy().query(body={
+        'timeMax': nxt, 
+        'timeMin': now, 
+        'items': [
+            {'id': 'primary'}
+        ]
+    }).execute()
+
+    freebusy = freebusy_result.get('calendars', [])
+    print(freebusy)
+
+    # Save credentials back to session in case access token was refreshed.
+    # ACTION ITEM: In a production app, you likely want to save these
+    #              credentials in a persistent database instead.
+    flask.session['credentials'] = credentials_to_dict(credentials)
+
+    return flask.jsonify(**freebusy_result)
+
+@app.route('/authorize')
+def authorize():
+    # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+      CLIENT_SECRETS_FILE, scopes=SCOPES)
+
+    flow.redirect_uri = flask.url_for('oauth2callback', _external=True)
+
+    authorization_url, state = flow.authorization_url(access_type='offline',include_granted_scopes='true')
+
+    # Store the state so the callback can verify the auth server response.
+    flask.session['state'] = state
+
+    return flask.redirect(authorization_url)
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    # Specify the state when creating the flow in the callback so that it can
+    # verified in the authorization server response.
+    state = flask.session['state']
+
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+      CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+    flow.redirect_uri = flask.url_for('oauth2callback', _external=True)
+
+    # Use the authorization server's response to fetch the OAuth 2.0 tokens.
+    authorization_response = flask.request.url
+    flow.fetch_token(authorization_response=authorization_response)
+
+    # Store credentials in the session.
+    # ACTION ITEM: In a production app, you likely want to save these
+    credentials = flow.credentials
+
+    flask.session['credentials'] = credentials_to_dict(credentials)
+
+    return flask.redirect(flask.url_for('test_api_request'))
+
+def credentials_to_dict(credentials):
+    return {'token': credentials.token,
+            'refresh_token': credentials.refresh_token,
+            'token_uri': credentials.token_uri,
+            'client_id': credentials.client_id,
+            'client_secret': credentials.client_secret,
+            'scopes': credentials.scopes}
+
 
 @app.route('/fbwebhook', methods=["GET", "POST"])
 def webhook():
@@ -82,4 +177,7 @@ def post_webhook():
 
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=80)
+    # TODO REMOVE ON REAL APPLICATION
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+    app.run(host="https://www.catchupbot.com", port=80)

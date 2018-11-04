@@ -1,0 +1,1 @@
+sudo gunicorn --certfile /etc/letsencrypt/live/catchupbot.com/cert.pem --keyfile /etc/letsencrypt/live/catchupbot.com/privkey.pem --access-logfile /home/ec2-user/logs/access.log --error-logfile /home/ec2-user/logs/error.log --bind 0.0.0.0:443 wsgi:app &
