@@ -21,7 +21,7 @@ chats = db.chats
 app = Flask(__name__)
 cors = CORS(app)
 
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+SCOPES = ['https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/plus.me']
 API_SERVICE_NAME = 'calendar'
 API_VERSION = 'v3'
 
@@ -68,6 +68,7 @@ def updatechat():
     tid = req_json['chat_id']
     credential = chats.find_one(filter = {'chat_id': tid})
 
+<<<<<<< HEAD
 
 @app.route('/pickevent')
 def pickevent():
@@ -78,6 +79,8 @@ def pickevent():
     
 
 
+=======
+>>>>>>> 39aa83a4ffbb9846e8af2d4c7ba5eb21963bdece
 @app.route('/test')
 def test_api_request():
     if 'credentials' not in flask.session:
@@ -90,6 +93,12 @@ def test_api_request():
     service = googleapiclient.discovery.build(
         API_SERVICE_NAME, API_VERSION, credentials=credentials)
 
+    user_info_service = googleapiclient.discovery.build(
+        'plus', 'v1', credentials=credentials)
+
+    user_info = user_info_service.people().get(userId='me').execute()
+    user_email = user_info['emails'][0]['value']
+
     utc_now = datetime.datetime.utcnow()
     now = utc_now.isoformat() + 'Z'  # 'Z' indicates UTC time
     utc_nxt = utc_now + datetime.timedelta(days=7)
@@ -99,7 +108,7 @@ def test_api_request():
         'timeMax': nxt,
         'timeMin': now,
         'items': [
-            {'id': 'primary'}
+            {'id': user_email}
         ]
     }).execute()
 
@@ -178,6 +187,10 @@ def webhook():
     elif request.method == "POST":
         return post_webhook()
     return 'Unexpected response'
+
+def get_free_slots(credentials, group_emails, time):
+    for email in group_emails:
+        pass
 
 
 def get_webhook():
