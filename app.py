@@ -17,7 +17,7 @@ import requests
 app = Flask(__name__)
 cors = CORS(app)
 
-SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+SCOPES = [["https://www.googleapis.com/auth/calendar.readonly"]]
 API_SERVICE_NAME = 'calendar'
 API_VERSION = 'v3'
 
@@ -81,12 +81,7 @@ def authorize():
 
     flow.redirect_uri = flask.url_for('oauth2callback', _external=True)
 
-    authorization_url, state = flow.authorization_url(
-      # Enable offline access so that you can refresh an access token without
-      # re-prompting the user for permission. Recommended for web server apps.
-      access_type='offline',
-      # Enable incremental authorization. Recommended as a best practice.
-      include_granted_scopes='true')
+    authorization_url, state = flow.authorization_url(access_type='offline',include_granted_scopes='true')
 
     # Store the state so the callback can verify the auth server response.
     flask.session['state'] = state
