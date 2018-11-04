@@ -61,6 +61,13 @@ def storechat():
     credential = {'chat_id': tid, 'credentials': []}
     chats.insert_one(credential)
     return 'Stored!'
+
+@app.route('/updatechat', methods=['GET', 'POST'])
+def updatechat():
+    req_json = request.get_json()
+    tid = req_json['chat_id']
+    credential = chats.find_one(filter = {'chat_id': tid})
+
     
 
 
