@@ -68,7 +68,6 @@ def updatechat():
     tid = req_json['chat_id']
     credential = chats.find_one(filter = {'chat_id': tid})
 
-<<<<<<< HEAD
 
 @app.route('/pickevent')
 def pickevent():
@@ -79,8 +78,6 @@ def pickevent():
     
 
 
-=======
->>>>>>> 39aa83a4ffbb9846e8af2d4c7ba5eb21963bdece
 @app.route('/test')
 def test_api_request():
     if 'credentials' not in flask.session:
