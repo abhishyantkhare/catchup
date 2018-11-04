@@ -76,7 +76,6 @@ def test_api_request():
     flask.session['credentials'] = credentials_to_dict(credentials)
 
 
-    send_message(flask.session["chat_id"], message)
 
     return render_template("share_auth.html")
 
