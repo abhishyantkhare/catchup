@@ -175,7 +175,7 @@ def post_webhook():
                         "text": "OK, let's start socializing again!",
                         "buttons": [{
                             "type": "web_url",
-                            "url": "https://catchupbot.com",
+                            "url": "https://catchupbot.com/test",
                             "title": "Set preferences",
                             "webview_height_ratio": "compact",
                             "messenger_extensions": True

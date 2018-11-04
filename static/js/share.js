@@ -4,28 +4,32 @@ let message = {
       "payload":{
         "template_type":"generic",
         "elements": [{
-          "buttons":[{
-            "type":"web_url",
-            "url":"https://catchupbot.com",
-            "title":"Let's Catch Up!"
-          }]
+        "title":"I miss you! Let's hang out :)",
+        "default_action":{
+          "type":"web_url",
+          "url": "https://catchupbot.com"
+        },
         }]
       }
     }
   };
-
+messenger_extensions = true;
   window.extAsyncInit = function () {
     MessengerExtensions.beginShareFlow(function(share_response) {
         // User dismissed without error, but did they share the message?
         if(share_response.is_sent){
           // The user actually did share. 
           // Perhaps close the window w/ requestCloseBrowser().
-          console.log(share_response)
-        }
-      }, 
+           }
+          //
+          MessengerExtensions.requestCloseBrowser(function success() {
+  // webview closed
+   }, function error(err) {
+  //   // an error occurred
+     });},
       function(errorCode, errorMessage) {      
       // An error occurred in the process
-      console.log(errorCode)
+      alert(errorMessage)
       
       },
       message,
