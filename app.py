@@ -107,8 +107,7 @@ def test_api_request():
     flask.session['user_email'] = user_email
     chat_id = request.args.get('chatid')
     if chat_id is not None:
-        tid = request.get_json()['chatid']
-        updatechat(tid, user_email)
+        updatechat(chat_id, user_email)
 
     utc_now = datetime.datetime.utcnow()
     now = utc_now.isoformat() + 'Z'  # 'Z' indicates UTC time
