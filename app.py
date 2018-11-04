@@ -4,12 +4,21 @@ from flask import jsonify
 from flask import make_response
 from flask import render_template
 from flask_socketio import SocketIO
-socketio = SocketIO(app)
+import logging
 
 import requests
 
 
 app = Flask(__name__)
+socketio = SocketIO(app)
+
+
+if __name__ != '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
+
+
 
 SEND_API_URL = "https://graph.facebook.com/v2.6/me/messages?access_token=EAAE9HFOuWMkBABlZC3IArcPyCjZBSdNDuecUzNmqCXuvWdHHX17G8NzjGRpnRvgsBpEAnpmEhWtPCZArvkI0C45DQYnxZAReOhP1dL2LNZClBWeRUdoZAnnNUFcYqnZBsGnnoTFMhhW4UNYq8ah9BfYOvzO2giWmzZAavLG4ZBHWHagZDZD"
 
@@ -22,7 +31,7 @@ def index():
 
 @socketio.on('fbdata_event')
 def parse_fb_data(json):
-    print('received json: ' + str(json))
+    app.logger.error(str(json))
 
 @app.route('/fbwebhook', methods=["GET", "POST"])
 def webhook():
