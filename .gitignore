@@ -1,9 +1,12 @@
 # .pyc files
-.pyc
+*.pyc
 
 
 #logs
 logs/
 
 # keys
-.pem
+*.pem
+
+# shell scripts
+*.sh
