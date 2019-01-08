@@ -37,22 +37,25 @@ def sign_in():
     userObj = User.create_user(userEmail, userLocation)
     userObj.session_token = session_token
     userObj.save()
-    return jsonify({'session_token': session_token})
+    return jsonify({'session_token': userObj.session_token})
 
 @app.route('/get_catchups', methods=['GET'])
 def get_catchups():
     user_email = request.args.get('user_email')
     session_token = request.args.get('session_token')
-    if not User.objects(email=user_email):
-        return jsonify(util.get_error('No such user'))
-    user_obj = User.objects.get(email=user_email)
-    if session_token != user_obj.session_token:
-        return jsonify(util.get_error('Invalid session token'))
+    user_valid = util.validate_user(user_email, session_token)
+    if not user_valid[0]:
+        return jsonify(user_valid[1])
+    user_obj = user_valid[1]
     return jsonify({"catchups" : user_obj.catchups})
     
 @app.route('/sign_out', methods=['POST'])
 @cross_origin()
 def sign_out():
+    data = request.data
+    dataDict = json.loads(data)
+    user_email = dataDict['user_email']
+    session_token = dataDict['session_token']
     return ''
 
 
