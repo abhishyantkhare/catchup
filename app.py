@@ -11,6 +11,7 @@ from bson.json_util import dumps
 from pymongo import MongoClient
 import json
 import requests
+import util
 
 client = MongoClient()
 db = client.catchupdb
@@ -27,12 +28,11 @@ def index():
     return resp
 
 @app.route('/sign_in', methods=['POST'])
-def new_user():
+def sign_in():
     data = request.data
     dataDict = json.loads(data)
     userEmail = dataDict['email']
     userLocation = dataDict['location']
-    print("HERE")
     if users.find({'email': userEmail}).count() == 0:
         users.insert_one({
                         'email': userEmail,
@@ -41,7 +41,15 @@ def new_user():
                             'coordinates': userLocation
                         }
                         })
-    return 'inserted!'
+    session_token = util.generate_token()
+    users.update_one({'email': userEmail}, {'$set': {'session_token': session_token}})
+
+    return jsonify({'session_token': session_token})
+
+@app.route('/sign_out', methods=['POST'])
+@cross_origin()
+def sign_out():
+    return ''
 
 
 
