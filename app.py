@@ -12,10 +12,10 @@ from pymongo import MongoClient
 import json
 import requests
 import util
+from mongoengine import connect
+from user import User
 
-client = MongoClient()
-db = client.catchupdb
-users = db.users
+connect('catchupdb')
 app = Flask(__name__)
 cors = CORS(app)
 
@@ -33,17 +33,10 @@ def sign_in():
     dataDict = json.loads(data)
     userEmail = dataDict['email']
     userLocation = dataDict['location']
-    if users.find({'email': userEmail}).count() == 0:
-        users.insert_one({
-                        'email': userEmail,
-                        'location': {
-                            'type': 'Point',
-                            'coordinates': userLocation
-                        }
-                        })
     session_token = util.generate_token()
-    users.update_one({'email': userEmail}, {'$set': {'session_token': session_token}})
-
+    userObj = User.create_user(userEmail, userLocation)
+    userObj.session_token = session_token
+    userObj.save()
     return jsonify({'session_token': session_token})
 
 @app.route('/sign_out', methods=['POST'])
