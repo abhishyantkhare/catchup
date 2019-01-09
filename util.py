@@ -11,6 +11,6 @@ def validate_user(user_email, session_token):
   if not User.objects(email=user_email):
     return False, get_error("No Such User")
   user_obj = User.objects.get(email=user_email)
-  if user_obj.session_token != session_token:
+  if user_obj.session_token != session_token or user_obj.session_token == '':
     return False, get_error("Invalid Session Token")
   return True, user_obj

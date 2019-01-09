@@ -56,7 +56,13 @@ def sign_out():
     dataDict = json.loads(data)
     user_email = dataDict['user_email']
     session_token = dataDict['session_token']
-    return ''
+    user_valid = util.validate_user(user_email, session_token)
+    if not user_valid[0]:
+        return jsonify(user_valid[1])
+    user_obj = user_valid[1]
+    user_obj.session_token = ''
+    user_obj.save()
+    return jsonify({'signed_out': 'success'})
 
 
 
