@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 import os
 import requests
 import json
-
+from apiclient import discovery
+import httplib2
+from oauth2client import client
 
 load_dotenv()
 
@@ -23,6 +25,10 @@ email_message = """Hi!
 
 email_subject = "You've Been Invited To A Catchup!"
 sender = os.getenv("CATCHUP_EMAIL")
+client_secret_path = os.getenv("CLIENT_SECRET_PATH")
+
+SCOPES = ['https://www.googleapis.com/auth/calendar.events']
+
 
 
 def generate_token():
@@ -86,3 +92,10 @@ def create_email(recipient):
   }
   return email_obj
 
+def google_auth_user(auth_code):
+  credentials = client.credentials_from_clientsecrets_and_code(
+    client_secret_path,
+    SCOPES[0],
+    auth_code)
+  return credentials
+  

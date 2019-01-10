@@ -15,11 +15,13 @@ import util
 from mongoengine import connect
 from user import User
 from catchup import Catchup
+from apiclient import discovery
+import httplib2
+from oauth2client import client
 
 connect('catchupdb')
 app = Flask(__name__)
 cors = CORS(app)
-
 
 
 
@@ -32,13 +34,15 @@ def index():
 def sign_in():
     data = request.data
     dataDict = json.loads(data)
-    userEmail = dataDict['email']
-    userLocation = dataDict['location']
+    user_location = dataDict['location']
     session_token = util.generate_token()
-    userObj = User.create_user(userEmail, userLocation)
-    userObj.session_token = session_token
-    userObj.save()
-    return jsonify({'session_token': userObj.session_token})
+    auth_code = dataDict['auth_code']
+    credentials = util.google_auth_user(auth_code)
+    user_email = credentials.id_token['email']
+    user_obj = User.create_user(user_email, user_location, auth_code, credentials.refresh_token, credentials.access_token)
+    user_obj.session_token = session_token
+    user_obj.save()
+    return jsonify({'session_token': user_obj.session_token, 'user_email': user_email})
 
 @app.route('/get_catchups', methods=['GET'])
 def get_catchups():
@@ -84,6 +88,23 @@ def create_catchup():
         user_obj = User.create_user(email, [-1,-1])
         user_obj.add_catchup(catchup_obj.catchup_id)
     return jsonify({'create_catchup': 'success'})
+
+@app.route('/accept_catchup', methods=['POST'])
+def accept_catchup():
+    data = request.data
+    dataDict = json.loads(data)
+    user_email = dataDict['user_email']
+    session_token = dataDict['session_token']
+    user_valid = util.validate_user(owner, session_token)
+    if not user_valid[0]:
+        return jsonify(user_valid[1])
+    user_obj = user_valid[1]
+    catchup_id = dataDict['catchup_id']
+    catchup_obj = Catchup.objects.get(catchup_id=catchup_id)
+    catchup_obj.accept_user(user_email)
+
+    
+
 
 
 
