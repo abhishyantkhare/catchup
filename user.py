@@ -14,4 +14,8 @@ class User(Document):
                       location = user_location,
                       catchups=[]).save()
     return User.objects.get(email=user_email)
+
+  def add_catchup(self, catchup_id):
+    self.catchups.append(catchup_id)
+    self.save()
         

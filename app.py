@@ -14,6 +14,7 @@ import requests
 import util
 from mongoengine import connect
 from user import User
+from catchup import Catchup
 
 connect('catchupdb')
 app = Flask(__name__)
@@ -47,7 +48,8 @@ def get_catchups():
     if not user_valid[0]:
         return jsonify(user_valid[1])
     user_obj = user_valid[1]
-    return jsonify({"catchups" : user_obj.catchups})
+    catchups = [Catchup.objects.get(catchup_id=catchup_id).to_json() for catchup_id in user_obj.catchups]
+    return jsonify({"catchups" : catchups})
     
 @app.route('/sign_out', methods=['POST'])
 @cross_origin()
@@ -63,6 +65,27 @@ def sign_out():
     user_obj.session_token = ''
     user_obj.save()
     return jsonify({'signed_out': 'success'})
+
+@app.route('/create_catchup', methods=['POST'])
+def create_catchup():
+    data = request.data
+    dataDict = json.loads(data)
+    owner = dataDict['catchup_owner']
+    session_token = dataDict['session_token']
+    user_valid = util.validate_user(owner, session_token)
+    if not user_valid[0]:
+        return jsonify(user_valid[1])
+    invited_list = dataDict['invited_list']
+    title = dataDict['title']
+    catchup_obj = Catchup.create_catchup(owner, invited_list, title)
+    owner_obj = User.objects.get(email=owner)
+    owner_obj.add_catchup(catchup_obj.catchup_id)
+    for email in invited_list:
+        user_obj = User.create_user(email, [-1,-1])
+        user_obj.add_catchup(catchup_obj.catchup_id)
+    return jsonify({'create_catchup': 'success'})
+
+
 
 
 
