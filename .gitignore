@@ -10,3 +10,10 @@ logs/
 
 # shell scripts
 *.sh
+
+# credential file for GMail
+credentials_gmail.json
+client_secret.json
+
+#environment files
+*.env
