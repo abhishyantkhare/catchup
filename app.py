@@ -52,7 +52,7 @@ def get_catchups():
     if not user_valid[0]:
         return jsonify(user_valid[1])
     user_obj = user_valid[1]
-    catchups = [Catchup.objects.get(catchup_id=catchup_id).to_json() for catchup_id in user_obj.catchups]
+    catchups = [Catchup.objects.get(id=catchup_id).to_json() for catchup_id in user_obj.catchups]
     return jsonify({"catchups" : catchups})
     
 @app.route('/sign_out', methods=['POST'])
@@ -83,10 +83,10 @@ def create_catchup():
     title = dataDict['title']
     catchup_obj = Catchup.create_catchup(owner, invited_list, title)
     owner_obj = User.objects.get(email=owner)
-    owner_obj.add_catchup(catchup_obj.catchup_id)
+    owner_obj.add_catchup(catchup_obj.id)
     for email in invited_list:
-        user_obj = User.create_user(email, [-1,-1])
-        user_obj.add_catchup(catchup_obj.catchup_id)
+        user_obj = User.create_user(email, [-1,-1], '', '', '')
+        user_obj.add_catchup(catchup_obj.id)
     return jsonify({'create_catchup': 'success'})
 
 @app.route('/accept_catchup', methods=['POST'])
@@ -95,13 +95,15 @@ def accept_catchup():
     dataDict = json.loads(data)
     user_email = dataDict['user_email']
     session_token = dataDict['session_token']
-    user_valid = util.validate_user(owner, session_token)
+    user_valid = util.validate_user(user_email, session_token)
     if not user_valid[0]:
         return jsonify(user_valid[1])
     user_obj = user_valid[1]
     catchup_id = dataDict['catchup_id']
-    catchup_obj = Catchup.objects.get(catchup_id=catchup_id)
+    catchup_obj = Catchup.objects.get(id=catchup_id)
     catchup_obj.accept_user(user_email)
+    
+    return jsonify({'success': 'accepted!'})
 
     
 

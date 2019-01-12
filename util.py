@@ -8,6 +8,8 @@ import json
 from apiclient import discovery
 import httplib2
 from oauth2client import client
+import dateutil.parser
+import datetime
 
 load_dotenv()
 
@@ -15,6 +17,8 @@ load_dotenv()
 catchup_link = os.getenv("CATCHUP_URL")
 sendgrid_api_key = os.getenv("SENDGRID_KEY")
 sendgrid_url = os.getenv("SENDGRID_URL")
+CALENDAR_API_FREEBUSY = 'https://www.googleapis.com/calendar/v3/freeBusy'
+CALENDAR_API_INFO = 'https://www.googleapis.com/calendar/v3/calendars/primary'
 
 email_message = """Hi!
 
@@ -98,4 +102,55 @@ def google_auth_user(auth_code):
     SCOPES[0],
     auth_code)
   return credentials
+
+def get_user_timezone(user_obj):
+  headers = {
+    "authorization": "Bearer " + user_obj.access_token,
+    "content-type": "application/json"
+  }
+
   
+def get_user_free_time(user_obj):
+  utc_now = datetime.datetime.utcnow()
+  now = utc_now.isoformat() + 'Z'  # 'Z' indicates UTC time
+  utc_nxt = utc_now + datetime.timedelta(days=7)
+  nxt = utc_nxt.isoformat() + 'Z'
+  print(user_obj.access_token)
+
+  data = {
+    "timeMin": now,
+    "timeMax": nxt,
+    "items": [
+      {
+        "id": user_obj.email
+      }
+    ]
+  }
+
+  headers = {
+    "authorization": "Bearer " + user_obj.access_token,
+    "content-type": "application/json"
+  }
+
+  r = requests.post(CALENDAR_API_FREEBUSY, data=json.dumps(data), headers=headers)
+  rsp_data = r.json()
+  print(rsp_data)
+  busy_times_dicts = rsp_data['calendars'][user_obj.email]['busy']
+  busy_times = [(dateutil.parser.parse(busy_dict['start']), dateutil.parser.parse(busy_dict['end'])) for busy_dict in busy_times_dicts]
+
+
+  return busy_times
+
+
+def merge_busy_times(busy_times_list):
+  busy_times_list.sort(key=lambda item: item[0])
+  print(busy_times_list)
+  merged = []
+  merged.append(busy_times_list[0])
+  busy_times_list = busy_times_list[1:]
+  for busy_time in busy_times_list:
+    if busy_time[0] > merged[-1][1]:
+      merged.append(busy_time)
+    else:
+      merged[-1][1] = max(busy_time[1], merged[-1][1])
+  return merged
