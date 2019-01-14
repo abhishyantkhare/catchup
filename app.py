@@ -18,6 +18,7 @@ from catchup import Catchup
 from apiclient import discovery
 import httplib2
 from oauth2client import client
+from stored_event import StoredEvent
 
 connect('catchupdb')
 app = Flask(__name__)
@@ -104,6 +105,19 @@ def accept_catchup():
     catchup_obj.accept_user(user_email)
     
     return jsonify({'success': 'accepted!'})
+
+@app.route('/add_stored_event', methods=['POST'])
+def add_stored_event():
+    data = request.data
+    dataDict = json.loads(data)
+    event_name = dataDict['event_name']
+    preferred_times = dataDict['preferred_times']
+    yelp_event = dataDict['yelp_event']
+    event_duration = dataDict['event_duration']
+    StoredEvent.create_stored_event(event_name, preferred_times, yelp_event, event_duration)
+
+    return jsonify({'success': 'added_event'})
+
 
     
 
