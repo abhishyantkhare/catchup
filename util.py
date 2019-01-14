@@ -49,6 +49,13 @@ weekday_map = {
   'Sat': 5
 }
 
+frequency_map = {
+  'Weekly': 1,
+  'Biweekly': 2,
+  'Monthly': 4
+}
+
+
 
 
 def generate_token():
@@ -251,4 +258,13 @@ def get_user_timezone(user_obj):
   r = requests.get(CALENDAR_API_INFO, headers=headers)
 
   return r.json()['timeZone']
+
+def run_catchup_event_generate(catchup_obj, sched):
+  catchup_obj.generate_new_event(sched)
+
+def schedule_catchup_event_generate(catchup_obj, sched):
+  #Change according to frequency
+  job = sched.add_job(run_catchup_event_generate, run_date=datetime.datetime.now() + datetime.timedelta(weeks=frequency_map[catchup_obj.frequency]), args=[catchup_obj, sched])
+
+  print(job)
 

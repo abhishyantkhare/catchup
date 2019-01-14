@@ -19,10 +19,15 @@ from apiclient import discovery
 import httplib2
 from oauth2client import client
 from stored_event import StoredEvent
+from apscheduler.schedulers.background import BackgroundScheduler
 
 connect('catchupdb')
 app = Flask(__name__)
 cors = CORS(app)
+
+# Start the scheduler
+sched = BackgroundScheduler()
+sched.start()
 
 
 
@@ -103,7 +108,8 @@ def accept_catchup():
     user_obj = user_valid[1]
     catchup_id = dataDict['catchup_id']
     catchup_obj = Catchup.objects.get(id=catchup_id)
-    catchup_obj.accept_user(user_email)
+    catchup_obj.accept_user(user_email, sched)
+
     
     return jsonify({'success': 'accepted!'})
 

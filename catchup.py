@@ -3,6 +3,11 @@ from mongoengine import *
 from event import Event
 from user import User
 from stored_event import StoredEvent
+from datetime import datetime
+from datetime import timedelta
+
+
+
 
 class Catchup(Document):
   catchup_title = StringField()
@@ -30,12 +35,12 @@ class Catchup(Document):
     catchup_obj.save()
     return catchup_obj
 
-  def accept_user(self, user_email):
+  def accept_user(self, user_email, sched):
     if user_email in self.invited_users:
       self.invited_users.remove(user_email)
     if user_email not in self.accepted_users:
       self.accepted_users.append(user_email)
-    self.check_and_schedule()
+    self.check_and_schedule(sched)
     self.save()
 
   def deny_user(self, user_email):
@@ -44,16 +49,16 @@ class Catchup(Document):
     self.check_and_schedule()
     self.save()
   
-  def check_and_schedule(self):
+  def check_and_schedule(self, sched):
     if (self.validate_acceptance()):
-      self.generate_new_event()
+      self.generate_new_event(sched)
       # self.schedule_event()
   
 
   def validate_acceptance(self):
     return not len(self.invited_users)
 
-  def generate_new_event(self):
+  def generate_new_event(self, sched):
     busy_times = self.get_busy_times()
     owner_obj = User.objects.get(email=self.catchup_owner)
     time_zone = util.get_user_timezone(owner_obj)
@@ -64,7 +69,7 @@ class Catchup(Document):
     if start_date:
       print(start_date)
       print(end_date)
-      self.schedule_event(event, start_date, end_date)
+      self.schedule_event(event, start_date, end_date, sched)
 
 
   def get_busy_times(self):
@@ -77,10 +82,12 @@ class Catchup(Document):
     busy_times_global = util.merge_busy_times(busy_times)
     return busy_times_global
 
-  def schedule_event(self, stored_event, start_date, end_date):
+  def schedule_event(self, stored_event, start_date, end_date, sched):
     event = Event.create_event(stored_event.event_name, start_date.isoformat(), end_date.isoformat(), [-1,-1], stored_event.event_duration)
     attendees = [{'email': self.catchup_owner}] + [{'email': email} for email in self.accepted_users]
-    for attendee in attendees:
-      user_obj = User.objects.get(email=attendee['email'])
-      util.add_event(user_obj, event, attendees)
+    owner_obj = User.objects.get(email=self.catchup_owner)
+    util.add_event(owner_obj, event, attendees)
     self.current_event = event
+    self.save()
+    util.schedule_catchup_event_generate(self, sched)
+
