@@ -27,6 +27,7 @@ class Catchup(Document):
                           common_radius = 0
                           ).save()
     util.send_emails(invited_list)
+    catchup_obj.save()
     return catchup_obj
 
   def accept_user(self, user_email):
@@ -34,6 +35,12 @@ class Catchup(Document):
       self.invited_users.remove(user_email)
     if user_email not in self.accepted_users:
       self.accepted_users.append(user_email)
+    self.check_and_schedule()
+    self.save()
+
+  def deny_user(self, user_email):
+    if user_email in self.invited_users:
+      self.invited_users.remove(user_email)
     self.check_and_schedule()
     self.save()
   
@@ -71,8 +78,9 @@ class Catchup(Document):
     return busy_times_global
 
   def schedule_event(self, stored_event, start_date, end_date):
-    event = Event.create_event(stored_event.event_name, start_date, end_date, [-1,-1], stored_event.event_duration)
+    event = Event.create_event(stored_event.event_name, start_date.isoformat(), end_date.isoformat(), [-1,-1], stored_event.event_duration)
     attendees = [{'email': self.catchup_owner}] + [{'email': email} for email in self.accepted_users]
     for attendee in attendees:
       user_obj = User.objects.get(email=attendee['email'])
       util.add_event(user_obj, event, attendees)
+    self.current_event = event

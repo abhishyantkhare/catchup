@@ -2,8 +2,8 @@ from mongoengine import *
 
 class Event(EmbeddedDocument):
   event_name = StringField()
-  event_start_time = DateTimeField()
-  event_end_time = DateTimeField()
+  event_start_time = StringField()
+  event_end_time = StringField()
   event_location = GeoPointField()
   event_duration = DecimalField()
   def create_event(event_name, event_start_time, event_end_time, event_location, event_duration):

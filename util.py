@@ -228,10 +228,10 @@ def date_in_intervals(intervals, date):
 def add_event(user_obj, event, attendees):
   data = {
     "start": {
-      "dateTime": event.event_start_time.isoformat()
+      "dateTime": event.event_start_time
     },
     "end": {
-      "dateTime": event.event_end_time.isoformat()
+      "dateTime": event.event_end_time
     },
     "attendees": attendees,
     "summary": event.event_name

@@ -88,6 +88,7 @@ def create_catchup():
     for email in invited_list:
         user_obj = User.create_user(email, [-1,-1], '', '', '')
         user_obj.add_catchup(catchup_obj.id)
+    catchup_obj.save()
     return jsonify({'create_catchup': 'success'})
 
 @app.route('/accept_catchup', methods=['POST'])
@@ -105,6 +106,22 @@ def accept_catchup():
     catchup_obj.accept_user(user_email)
     
     return jsonify({'success': 'accepted!'})
+
+@app.route('/deny_catchup', methods=['POST'])
+def deny_catchup():
+    data = request.data
+    dataDict = json.loads(data)
+    user_email = dataDict['user_email']
+    session_token = dataDict['session_token']
+    user_valid = util.validate_user(user_email, session_token)
+    if not user_valid[0]:
+        return jsonify(user_valid[1])
+    user_obj=user_valid[1]
+    catchup_id = dataDict['catchup_id']
+    catchup_obj = Catchup.objects.get(id=catchup_id)
+    catchup_obj.deny_user(user_email)
+
+    return jsonify({'success': 'denied!'})
 
 @app.route('/add_stored_event', methods=['POST'])
 def add_stored_event():
