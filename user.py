@@ -28,6 +28,12 @@ class User(Document):
     return User.objects.get(email=user_email)
 
   def add_catchup(self, catchup_id):
-    self.catchups.append(catchup_id)
+    if catchup_id not in self.catchups:
+      self.catchups.append(catchup_id)
+    self.save()
+
+  def remove_catchup(self, catchup_id):
+    if catchup_id in self.catchups:
+      self.catchups.remove(catchup_id)
     self.save()
         

@@ -171,8 +171,8 @@ def update_event():
     print(catchup_obj)
     return jsonify({'success': 'updated catchup!'})
 
-@app.route('/generate_new_event', methods=['POST'])
-def generate_new_event():
+@app.route('/delete_catchup', methods=['POST'])
+def delete_catchup():
     data = request.data
     dataDict = json.loads(data)
     user_email = dataDict['user_email']
@@ -180,13 +180,17 @@ def generate_new_event():
     user_valid = util.validate_user(user_email, session_token)
     if not user_valid[0]:
         return jsonify(user_valid[1]) 
-    catchup = dataDict['catchup']
-    catchup_id = catchup['_id']['$oid']
-    catchup_obj = Catchup.objects.get(id=catchup_id)
-    catchup_obj.generate_new_event(sched)    
-    return catchup_obj.current_event
-
-
+    catchup = dataDict['catchup'] 
+    catchup_obj = Catchup.objects.get(id=catchup['_id']['$oid'])
+    owner_obj = User.objects.get(email=catchup_obj.catchup_owner)
+    owner_obj.remove_catchup(catchup_obj.id)
+    for user in catchup_obj.accepted_users:
+        user_obj = User.objects.get(email=user)
+        user_obj.remove_catchup(catchup_obj.id)
+    for user in catchup_obj.invited_users:
+        user_obj = User.objects.get(email=user)
+        user_obj.remove_catchup(catchup_obj.id)
+    return jsonify({'success': 'deleted catchup'})
 
 
     
