@@ -153,6 +153,8 @@ def update_event():
     catchup = dataDict['catchup']
     catchup_id = catchup['_id']['$oid']
     catchup_obj = Catchup.objects.get(id=catchup_id)
+    if user_email != catchup_obj.catchup_owner:
+        return jsonify(util.get_error('Invalid permissions'))
     catchup_obj.catchup_title=catchup['catchup_title']
     catchup_obj.compare_accepted_users(catchup['accepted_users'])
     catchup_obj.accepted_users = catchup['accepted_users']
@@ -182,6 +184,8 @@ def delete_catchup():
         return jsonify(user_valid[1]) 
     catchup = dataDict['catchup'] 
     catchup_obj = Catchup.objects.get(id=catchup['_id']['$oid'])
+    if user_email != catchup_obj.catchup_owner:
+        return jsonify(util.get_error('Invalid permissions'))
     owner_obj = User.objects.get(email=catchup_obj.catchup_owner)
     owner_obj.remove_catchup(catchup_obj.id)
     for user in catchup_obj.accepted_users:
