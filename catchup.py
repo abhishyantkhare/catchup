@@ -91,3 +91,27 @@ class Catchup(Document):
     self.save()
     util.schedule_catchup_event_generate(self, sched)
 
+  def compare_accepted_users(self, new_accept_list):
+    for user in self.accepted_users:
+      if user not in new_accept_list:
+        if User.objects(email=user):
+          user_obj = User.objects.get(email=user)
+          user_obj.catchups.remove(self.id)
+          user_obj.save()
+
+  def compare_invited_users(self, new_invite_list):
+    for user in self.invited_users:
+      if user not in new_invite_list:
+        if User.objects(email=user):
+          user_obj = User.objects.get(email=user)
+          user_obj.catchups.remove(self.id)
+          user_obj.save()
+  
+  def new_invite_users(self, new_invite_list):
+    for user_email in new_invite_list:
+      if user_email not in self.invited_users:
+        user_obj = User.create_user(user_email, [-1,-1], '', '', '')
+        user_obj.add_catchup(self.id)
+        print(user_obj)
+        util.send_email(user_email)
+      

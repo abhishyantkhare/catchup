@@ -141,6 +141,53 @@ def add_stored_event():
 
     return jsonify({'success': 'added_event'})
 
+@app.route('/update_catchup', methods=['POST'])
+def update_event():
+    data = request.data
+    dataDict = json.loads(data)
+    user_email = dataDict['user_email']
+    session_token = dataDict['session_token']
+    user_valid = util.validate_user(user_email, session_token)
+    if not user_valid[0]:
+        return jsonify(user_valid[1]) 
+    catchup = dataDict['catchup']
+    catchup_id = catchup['_id']['$oid']
+    catchup_obj = Catchup.objects.get(id=catchup_id)
+    catchup_obj.catchup_title=catchup['catchup_title']
+    catchup_obj.compare_accepted_users(catchup['accepted_users'])
+    catchup_obj.accepted_users = catchup['accepted_users']
+    catchup_obj.new_invite_users(catchup['invited_users'])
+    catchup_obj.compare_invited_users(catchup['invited_users'])
+    catchup_obj.invited_users = catchup['invited_users']
+    catchup_obj.frequency = catchup['frequency']
+    if 'current_event' in  catchup:
+        current_event = catchup['current_event']
+        catchup_obj.current_event.event_name = current_event['event_name']
+        catchup_obj.current_event.event_start_time = current_event['event_start_time']
+        catchup_obj.current_event.event_end_time = current_event['event_end_time']
+        catchup_obj.current_event.event_location = current_event['event_location']
+        catchup_obj.current_event.event_duration = current_event['event_duration']
+    catchup_obj.save()
+    print(catchup_obj)
+    return jsonify({'success': 'updated catchup!'})
+
+@app.route('/generate_new_event', methods=['POST'])
+def generate_new_event():
+    data = request.data
+    dataDict = json.loads(data)
+    user_email = dataDict['user_email']
+    session_token = dataDict['session_token']
+    user_valid = util.validate_user(user_email, session_token)
+    if not user_valid[0]:
+        return jsonify(user_valid[1]) 
+    catchup = dataDict['catchup']
+    catchup_id = catchup['_id']['$oid']
+    catchup_obj = Catchup.objects.get(id=catchup_id)
+    catchup_obj.generate_new_event(sched)    
+    return catchup_obj.current_event
+
+
+
 
     
 
