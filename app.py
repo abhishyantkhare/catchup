@@ -21,6 +21,7 @@ from oauth2client import client
 from stored_event import StoredEvent
 from apscheduler.schedulers.background import BackgroundScheduler
 
+
 connect('catchupdb')
 app = Flask(__name__)
 cors = CORS(app)
@@ -59,6 +60,7 @@ def get_catchups():
         return jsonify(user_valid[1])
     user_obj = user_valid[1]
     catchups = [Catchup.objects.get(id=catchup_id).to_json() for catchup_id in user_obj.catchups]
+    
     return jsonify({"catchups" : catchups})
     
 @app.route('/sign_out', methods=['POST'])
@@ -136,7 +138,7 @@ def add_stored_event():
     event_name = dataDict['event_name']
     preferred_times = dataDict['preferred_times']
     yelp_event = dataDict['yelp_event']
-    event_duration = dataDict['event_duration']
+    event_duration = float(dataDict['event_duration'])
     StoredEvent.create_stored_event(event_name, preferred_times, yelp_event, event_duration)
 
     return jsonify({'success': 'added_event'})

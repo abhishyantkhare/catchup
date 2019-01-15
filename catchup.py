@@ -62,8 +62,7 @@ class Catchup(Document):
     busy_times = self.get_busy_times()
     owner_obj = User.objects.get(email=self.catchup_owner)
     time_zone = util.get_user_timezone(owner_obj)
-    #Make this generic
-    event = StoredEvent.objects.get(event_name="Dinner")
+    event = StoredEvent.get_random_event()
     event_dates = [util.string_to_datetime(date_str, time_zone) for date_str in event.preferred_times]
     start_date, end_date = event.find_free_date(event_dates, busy_times)
     if start_date:

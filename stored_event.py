@@ -1,6 +1,7 @@
 from mongoengine import *
 import datetime
 import util
+from random import randint
 
 class StoredEvent(Document):
   event_name = StringField()
@@ -26,5 +27,11 @@ class StoredEvent(Document):
         start_date = start_date + datetime.timedelta(minutes=30)
         end_date = start_date + datetime.timedelta(hours=float(self.event_duration))
     return None, None
+
+  def get_random_event():
+    max_count = StoredEvent.objects.count()
+    pos = randint(0, max_count - 1)
+    stored_event_obj = StoredEvent.objects[pos:pos+1][0]
+    return stored_event_obj
         
   

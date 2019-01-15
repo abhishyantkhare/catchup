@@ -218,6 +218,8 @@ def string_to_datetime(string_time, time_zone):
 def get_time_hr_min(time_str, am):
   time_str_split = time_str.split(':')
   hr = int(time_str_split[0])
+  if hr == 12:
+    hr = 0
   if not am:
     hr = hr + 12
   minute = int(time_str_split[1])
