@@ -192,6 +192,24 @@ def delete_catchup():
         user_obj.remove_catchup(catchup_obj.id)
     return jsonify({'success': 'deleted catchup'})
 
+@app.route('/leave_catchup', methods=['POST'])
+def leave_catchup():
+    data = request.data
+    dataDict = json.loads(data)
+    user_email = dataDict['user_email']
+    session_token = dataDict['session_token']
+    user_valid = util.validate_user(user_email, session_token)
+    if not user_valid[0]:
+        return jsonify(user_valid[1]) 
+    catchup = dataDict['catchup'] 
+    catchup_obj = Catchup.objects.get(id=catchup['_id']['$oid']) 
+    user_obj = User.objects.get(email=user_email)
+    user_obj.remove_catchup(catchup_obj.id)
+    if user_email in catchup_obj.accepted_users:
+        catchup_obj.accepted_users.remove(user_email)
+        catchup_obj.save()
+    return jsonify({'success': 'left catchup'})
+
 
     
 
