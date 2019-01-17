@@ -4,6 +4,7 @@ from event import Event
 from user import User
 from stored_event import StoredEvent
 from datetime import datetime
+from apscheduler.executors.pool import BaseExecutor
 from datetime import timedelta
 
 
@@ -43,10 +44,10 @@ class Catchup(Document):
     self.check_and_schedule(sched)
     self.save()
 
-  def deny_user(self, user_email):
+  def deny_user(self, user_email, sched):
     if user_email in self.invited_users:
       self.invited_users.remove(user_email)
-    self.check_and_schedule()
+    self.check_and_schedule(sched)
     self.save()
   
   def check_and_schedule(self, sched):

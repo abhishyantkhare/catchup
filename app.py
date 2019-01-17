@@ -20,6 +20,9 @@ import httplib2
 from oauth2client import client
 from stored_event import StoredEvent
 from apscheduler.schedulers.background import BackgroundScheduler
+from task import Task
+
+
 
 
 connect('catchupdb')
@@ -27,8 +30,10 @@ app = Flask(__name__)
 cors = CORS(app)
 
 # Start the scheduler
+Task.clean_tasks()
 sched = BackgroundScheduler()
 sched.start()
+Task.init_tasks(sched)
 
 
 
@@ -127,7 +132,7 @@ def deny_catchup():
     user_obj=user_valid[1]
     catchup_id = dataDict['catchup_id']
     catchup_obj = Catchup.objects.get(id=catchup_id)
-    catchup_obj.deny_user(user_email)
+    catchup_obj.deny_user(user_email, sched)
 
     return jsonify({'success': 'denied!'})
 
@@ -196,6 +201,7 @@ def delete_catchup():
     for user in catchup_obj.invited_users:
         user_obj = User.objects.get(email=user)
         user_obj.remove_catchup(catchup_obj.id)
+    catchup_obj.delete()
     return jsonify({'success': 'deleted catchup'})
 
 @app.route('/leave_catchup', methods=['POST'])

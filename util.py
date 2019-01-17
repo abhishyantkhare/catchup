@@ -11,6 +11,7 @@ from oauth2client import client
 import dateutil.parser
 import datetime
 import pytz
+from task import Task
 
 load_dotenv()
 
@@ -172,7 +173,6 @@ def get_user_busy_time(user_obj):
 
   r = requests.post(CALENDAR_API_FREEBUSY, data=json.dumps(data), headers=headers)
   rsp_data = r.json()
-  print(rsp_data)
   busy_times_dicts = rsp_data['calendars'][user_obj.email]['busy']
   busy_times = [(dateutil.parser.parse(busy_dict['start']), dateutil.parser.parse(busy_dict['end'])) for busy_dict in busy_times_dicts]
  
@@ -263,7 +263,8 @@ def run_catchup_event_generate(catchup_obj, sched):
 
 def schedule_catchup_event_generate(catchup_obj, sched):
   #Change according to frequency
-  job = sched.add_job(run_catchup_event_generate, run_date=datetime.datetime.now() + datetime.timedelta(weeks=frequency_map[catchup_obj.frequency]), args=[catchup_obj, sched])
-
+  run_date = datetime.datetime.now() + datetime.timedelta(weeks=frequency_map[catchup_obj.frequency])
+  job = sched.add_job(run_catchup_event_generate, run_date=run_date, args=[catchup_obj, sched])
+  Task.create_task(catchup_obj.id,run_date)
   print(job)
 
