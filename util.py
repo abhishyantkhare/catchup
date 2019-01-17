@@ -26,12 +26,6 @@ EVENT_API = 'https://www.googleapis.com/calendar/v3/calendars/primary/events?sen
 REFRESH_URL = 'https://www.googleapis.com/oauth2/v4/token'
 
 
-email_message = """Hi!
-
-                You've been invited to a catchup. To accept or deny your invitation, go to """ + catchup_link + """.
-              
-                Thanks,
-                The Catchup Team"""
 
 email_subject = "You've Been Invited To A Catchup!"
 sender = os.getenv("CATCHUP_EMAIL")
@@ -54,6 +48,9 @@ frequency_map = {
   'Biweekly': 2,
   'Monthly': 4
 }
+
+with open('email_template.html') as email_file:
+  email_message = email_file.read().replace('\n', '')
 
 
 
@@ -112,7 +109,7 @@ def create_email(recipient):
     "content":
     [
       {
-        "type": "text/plain",
+        "type": "text/html",
         "value": email_message
       }
     ]

@@ -17,3 +17,6 @@ client_secret.json
 
 #environment files
 *.env
+
+#email template
+email_template.html
