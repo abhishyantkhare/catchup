@@ -18,7 +18,6 @@ class Task(Document):
     curr_date = datetime.now()
     for task in Task.objects:
       if curr_date > task.run_date:
-        print('HI')
         task.delete()
   
   def init_tasks(sched):
